@@ -1,0 +1,32 @@
+$cornerSize: 20px;
+
+.root {
+  display: flex;
+  padding: 20px;
+  font-size: 24px;
+  cursor: pointer;
+  min-width: 380px;
+}
+
+.topCorner {
+  width: $cornerSize;
+  height: $cornerSize;
+  border-top: 1px solid white;
+  border-left: 1px solid white;
+}
+
+.childrenContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.bottomCorner {
+  width: $cornerSize;
+  height: $cornerSize;
+  border-bottom: 1px solid white;
+  border-right: 1px solid white;
+  margin-left: auto;
+  margin-top: auto;
+}

@@ -1,0 +1,11 @@
+.root {
+  display: flex;
+  gap: 20px;
+  flex-direction: column;
+  width: 100%;
+  max-width: 1000px;
+
+  & > :last-child {
+    margin-left: auto;
+  }
+}
