@@ -2,6 +2,7 @@ import {RedisClient} from "@/clients/redis";
 import dayjs from "dayjs";
 import {z} from "zod";
 import Session from "@/types/Session";
+import {Graph} from "redis";
 
 const SESSION_PREFIX = 'SESSIONS'
 
@@ -18,7 +19,7 @@ export const sessionSchema = z.object({
   closesOn: z.number()
 }).default(() => {
   const date = dayjs();
-  const id = date.format('DD-MM-YYYY:hh')
+  const id = date.unix().toString()
   return {
     id,
     isClosed: false,
@@ -28,32 +29,36 @@ export const sessionSchema = z.object({
 })
 
 export default function RedisSessionsService(
-  redis: RedisClient
+  redis: RedisClient,
+  graph: Graph
 ) {
   return {
     createSession: async (): Promise<Session> => {
       const defaultSession = sessionSchema.parse(undefined);
-      const score = defaultSession.createdAt;
-      const member = await redis.zScore(keys.sessions, defaultSession.id)
-      if(member) return defaultSession
-      await redis.zAdd(keys.sessions, [{value: defaultSession.id, score}])
-      await redis.json.set(keys.session(defaultSession.id), '$', defaultSession)
+      const query = 'CREATE (:Session {' +
+        'id: $id, ' +
+        'isClosed: $isClosed, ' +
+        'createdAt: $createdAt, ' +
+        'closesOn: $closesOn})'
+      await graph.query(query, {params: defaultSession})
       return defaultSession
     },
     getLastSession: async (): Promise<Session | null> => {
-      const lastSessions = await redis.zRange(keys.sessions, 0, -1, {REV: true})
-      if(lastSessions.length === 0) return null
-
-      const lastSessionId = lastSessions.at(0);
-      if(!lastSessionId) return null
-
-      const lastSession = await redis.json.get(keys.session(lastSessionId))
-      return lastSession as Session
+      const sessions = await graph.roQuery<Session>('MATCH (s:Session) ' +
+        'WHERE s.createdAt > $dateRange ' +
+        'RETURN s.id as id, s.isClosed as isClosed, s.createdAt as createdAt,s.closesOn as closesOn ' +
+        'ORDER BY s.createdAt DESC ' +
+        'LIMIT 1 ',
+        {params: {dateRange: dayjs().subtract(1, 'day').unix()}}
+      )
+      if(!sessions.data || sessions.data.length === 0) return null
+      return sessions.data[0]
     },
     getSession: async (id: string): Promise<Session | null> => {
-      sessionSchema.parse({id})
-      const session = await redis.json.get(keys.session(id))
-      return session as Session
+      const session = await graph.roQuery<Session>('MATCH (s:Session {id: $id})' +
+        ' RETURN s.id as id, s.isClosed as isClosed, s.createdAt as createdAt,s.closesOn as closesOn ', {params: {id}})
+      if(!session.data || session.data.length === 0) return null
+      return session.data[0]
     }
   }
 }

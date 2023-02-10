@@ -5,10 +5,10 @@ type Props = {
   children: ReactNode
 }
 
-export default function Sessions({children}: Props) {
+export default function Sessions() {
   return (
     <div className={styles.root}>
-      {children}
+      
     </div>
   )
 }
