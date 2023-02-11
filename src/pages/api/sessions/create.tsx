@@ -2,13 +2,10 @@
 import type {NextApiRequest, NextApiResponse} from 'next'
 import RedisInstance from "@/clients/redis";
 import RedisSessionsService from "@/services/redis/sessions";
-import {Graph} from "redis";
-import {FRAGEN_GRAPH_NAME} from "@/utils/variables";
 import Session from "@/types/Session";
 
 const redis = await RedisInstance();
-const graph = new Graph(redis, FRAGEN_GRAPH_NAME)
-const sessionsService = RedisSessionsService(redis, graph)
+const sessionsService = RedisSessionsService(redis)
 
 type Data = {
   result: Session

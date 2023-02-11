@@ -1,8 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type {NextApiRequest, NextApiResponse} from 'next'
 import RedisInstance from "@/clients/redis";
-import {Graph} from "redis";
-import {FRAGEN_GRAPH_NAME} from "@/utils/variables";
 import RedisSessionsService from "@/services/redis/sessions";
 import RedisQuestionsService from "@/services/redis/questions";
 import Question from "@/types/Question";
@@ -12,8 +10,7 @@ type Data = {
 }
 
 const redis = await RedisInstance();
-const graph = new Graph(redis, FRAGEN_GRAPH_NAME)
-const sessionsService = RedisSessionsService(redis, graph)
+const sessionsService = RedisSessionsService(redis)
 const questionsService = RedisQuestionsService(redis, sessionsService)
 
 export default async function handler(

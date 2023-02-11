@@ -3,6 +3,7 @@ import dayjs from "dayjs";
 import {z} from "zod";
 import Session from "@/types/Session";
 import {Graph} from "redis";
+import {FRAGEN_GRAPH_NAME} from "@/utils/variables";
 
 const SESSION_PREFIX = 'SESSIONS'
 
@@ -30,8 +31,8 @@ export const sessionSchema = z.object({
 
 export default function RedisSessionsService(
   redis: RedisClient,
-  graph: Graph
 ) {
+  const graph = new Graph(redis, FRAGEN_GRAPH_NAME)
   return {
     createSession: async (): Promise<Session> => {
       const defaultSession = sessionSchema.parse(undefined);
