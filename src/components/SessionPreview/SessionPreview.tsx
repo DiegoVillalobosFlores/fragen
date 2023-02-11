@@ -1,45 +1,32 @@
-'use client'
-
-import {ReactNode} from 'react'
-import {motion, useAnimationControls} from "framer-motion";
-import styles from './SessionPreview.module.scss'
+import SessionPreviewContainer from "@/components/SessionPreview/SessionPreviewContainer";
+import Session from "@/types/Session";
+import RedisInstance from "@/clients/redis";
+import RedisSessionsService from "@/services/redis/sessions";
+import RedisQuestionsService from "@/services/redis/questions";
+import Link from "next/link";
+import dayjs from "dayjs";
+import SessionPreviewQuestions from "@/components/SessionPreview/SessionPreviewQuestions";
 
 type Props = {
-  children: ReactNode
+  session: Session
 }
 
-export default function SessionPreview({children}: Props) {
-  const topCornerControls = useAnimationControls();
-  const bottomCornerControls = useAnimationControls();
+const redis = await RedisInstance();
+const sessionsService = RedisSessionsService(redis);
+const questionsService = RedisQuestionsService(redis, sessionsService)
 
-  const widthVariants = {
-    hoverStart: {
-      width: 40,
-      height: 40
-    },
-    hoverEnd: {
-      width: 20,
-      height: 20
-    }
-  }
-
+export default async function SessionPreview({session}: Props) {
+  console.time('questions')
+  const sessionQuestions = await questionsService.getQuestions(session.id);
+  console.timeEnd('questions')
   return (
-    <motion.div
-      onHoverStart={() => {
-        topCornerControls.start({...widthVariants.hoverStart, marginRight: -20})
-        bottomCornerControls.start({...widthVariants.hoverStart, marginLeft: -20})
-      }}
-      onHoverEnd={() => {
-        topCornerControls.start({...widthVariants.hoverEnd, marginRight: 0})
-        bottomCornerControls.start({...widthVariants.hoverEnd, marginLeft: 0})
-      }}
-      className={`${styles.root} dark-theme`}
-    >
-      <motion.div transition={{bounce: 0}} animate={topCornerControls} className={styles.topCorner}/>
-      <motion.div transition={{bounce: 0}} className={styles.childrenContainer}>
-        {children}
-      </motion.div>
-      <motion.div transition={{bounce: 0}} animate={bottomCornerControls} className={styles.bottomCorner}/>
-    </motion.div>
+    <SessionPreviewContainer>
+      <Link href={`/sessions/${session.id}/`}>
+        {sessionQuestions.length === 0 && 'Keine Fragen gestellt'}
+        <SessionPreviewQuestions questions={sessionQuestions}/>
+        <br/>
+        <div>Sitzung endet {dayjs.unix(Number(session.closesOn)).fromNow()}</div>
+      </Link>
+    </SessionPreviewContainer>
   )
 }
