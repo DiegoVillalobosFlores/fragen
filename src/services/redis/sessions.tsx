@@ -52,14 +52,33 @@ export default function RedisSessionsService(
         'LIMIT 1 ',
         {params: {dateRange: dayjs().subtract(1, 'day').unix()}}
       )
+        .catch(e => {
+          console.error(e);
+        })
+      if(!sessions) return null
       if(!sessions.data || sessions.data.length === 0) return null
       return sessions.data[0]
     },
     getSession: async (id: string): Promise<Session | null> => {
       const session = await graph.roQuery<Session>('MATCH (s:Session {id: $id})' +
         ' RETURN s.id as id, s.isClosed as isClosed, s.createdAt as createdAt,s.closesOn as closesOn ', {params: {id}})
+        .catch(e => {
+          console.error(e);
+          return null
+        })
+      if(!session) return null
       if(!session.data || session.data.length === 0) return null
       return session.data[0]
+    },
+    getSessions: async (): Promise<Array<Session> | null> => {
+      const sessions = await graph.roQuery<Session>('MATCH (s:Session) ' +
+        ' RETURN s.id as id, s.isClosed as isClosed, s.createdAt as createdAt,s.closesOn as closesOn ')
+        .catch(e => {
+          console.error(e);
+        })
+      if(!sessions || !sessions.data) return null;
+
+      return sessions.data
     }
   }
 }

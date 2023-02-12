@@ -29,7 +29,7 @@ export default function Home({currentSession}: Props) {
       <HomeSubtitleContainer>
         <HomeSubtitle>Sitzung von Heute:</HomeSubtitle>
         {/* @ts-expect-error Server Component */}
-        <SessionPreview session={currentSession}/>
+        {currentSession && <SessionPreview session={currentSession}/>}
       </HomeSubtitleContainer>
       <HomeButtons/>
     </div>

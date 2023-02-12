@@ -20,3 +20,5 @@ export default async function HomePage({searchParams}: Props) {
   const actualSession = await sessionsService.getLastSession();
   return (<Home currentSession={actualSession} />)
 }
+
+export const dynamic = 'force-dynamic';
