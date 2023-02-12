@@ -13,11 +13,12 @@ const redis = await RedisInstance();
 const sessionsService = RedisSessionsService(redis)
 
 export default async function HomePage({searchParams}: Props) {
+  const actualSession = await sessionsService.getLastSession();
   if(searchParams?.newSession === 'true') {
+    if(actualSession) redirect(`/sessions/${actualSession.id}`)
     const createdSession = await sessionsService.createSession()
     if(createdSession) redirect(`/sessions/${createdSession.id}`)
   }
-  const actualSession = await sessionsService.getLastSession();
   return (<Home currentSession={actualSession} />)
 }
 
