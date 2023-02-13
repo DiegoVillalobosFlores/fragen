@@ -6,6 +6,9 @@ import RedisQuestionsService from "@/services/redis/questions";
 import Link from "next/link";
 import dayjs from "dayjs";
 import SessionPreviewQuestions from "@/components/SessionPreview/SessionPreviewQuestions";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(relativeTime)
 
 type Props = {
   session: Session
