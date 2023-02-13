@@ -28,7 +28,7 @@ export default function Home({currentSession}: Props) {
         <HomeButtons/>
       </Layout.Main>
       <Layout.Side>
-        Fragen ist die Diestung die 100% anonymous ist
+        Fragen ist die Dienst die 100% anonymous ist
       </Layout.Side>
     </Layout>
   )
